@@ -63,7 +63,6 @@ TODO
 
 * Build a GUI frontend
 * Setup a travis build system
-* CodeClimate for code coverage?
 * Setup a unit testing suite (will have to look for one)
 * use `nwjs-builder` to create a proper binaries
 * create a `for-contributors.md` for, well, contributors
