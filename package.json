@@ -1,0 +1,12 @@
+{
+  "name": "Loginion",
+  "main": "index.html",
+  "dependencies": {
+    "font-awesome": "^4.5.0",
+    "jquery": "^2.2.0",
+    "querystring": "^0.2.0",
+    "request": "^2.67.0"
+  },
+  "repository": "https://github.com/hawklings/loginion",
+  "LICENSE": "MIT"
+}
