@@ -1,4 +1,5 @@
 Loginion [![Build Status](https://travis-ci.org/hawklings/loginion.svg?branch=master)](https://travis-ci.org/hawklings/loginion) [![Code Climate](https://codeclimate.com/github/hawklings/loginion/badges/gpa.svg)](https://codeclimate.com/github/hawklings/loginion) [![Test Coverage](https://codeclimate.com/github/hawklings/loginion/badges/coverage.svg)](https://codeclimate.com/github/hawklings/loginion/coverage) [![Issue Count](https://codeclimate.com/github/hawklings/loginion/badges/issue_count.svg)](https://codeclimate.com/github/hawklings/loginion)
+=========
 
 A replacement for the ION Login page on the campus of MIT, Manipal.
 
