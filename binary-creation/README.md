@@ -17,7 +17,7 @@ npm build.js
 
 Built binaries are present in the `build` folder.
 
-TODO
+To Do
 ====
 
 Write a script that auto-generates build for tagged releases, with a changelog pulled
