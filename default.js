@@ -1,70 +1,93 @@
-var request = require('request');
 var gui = require('nw.gui');
 var win = gui.Window.get();
 
+var request = require('request');
+var fs = require('fs');
+var querystring = require('querystring');
+
 var historyArea = {
-    addLine: function(line) {
+    addLine: function (line) {
         $('.history').append('<div>' + line + '</div>');
     },
-    executedCommand: function(command) {
+    executedCommand: function (command) {
         $('.history').append('<div class="sameline"><div class="fa fa-angle-right"></div><div class="command">' + command + '</div></div>');
     },
-    addResult: function(result) {
+    addResult: function (result) {
         $('.history').append('<div>' + result + '</div>');
         $('.history').append('<br> ');
     }
 }
 
 var terminal = {
-    blink: function() {
+    blink: function () {
         var text = $('.command>input').val();
-        if (text[text.length - 1] != '_') {
-            $('.command>input').val(text + '_');
-        } else {
-            $('.command>input').val(text.substr(0, text.length - 1));
-        }
+        terminal.removeUnderscore() || terminal.addUnderscore();
         $('#container').scrollTop(1000000);
     },
-    disable: function() {
+    disable: function () {
         $('.line').css('opacity', '0');
     },
-    enable: function() {
+    enable: function () {
         $('.command>input').val('');
         $('.line').css('opacity', '1');
     },
-    executeCommand: function(command) {
-        if (command != '') {
+    addUnderscore: function () {
+        var text = $('.command>input').val();
+        if (text[text.length - 1] !== '_') {
+            $('.command>input').val(text + '_');
+            return true;
+        }
+        return false;
+    },
+    removeUnderscore: function () {
+        var text = $('.command>input').val();
+        if (text[text.length - 1] === '_') {
+            $('.command>input').val(text.substr(0, text.length - 1));
+            return true;
+        }
+        return false;
+    },
+    executeCommand: function (command) {
+        if (command !== '') {
             $('.command>input').val('');
             historyArea.executedCommand(command);
             terminal.disable();
-            terminal.parseCommand(command, function(result) {
-                if (result != '') {
+            terminal.parseCommand(command, function (result) {
+                if (result !== '') {
                     historyArea.addResult(result);
                 }
                 terminal.enable();
             });
         }
     },
-    parseCommand: function(line, callback) {
+    parseCommand: function (line, callback) {
         var result = '';
         var command = line.split(' ');
-        if (command[0] == 'login') {
-            internet.checkConnection(function() {
-                internet.login(command[1], command[2], function(data) {
-                    callback && callback(data);
+        if (command[0] === 'login') {
+            internet.checkConnection(function () {
+                internet.login(command[1], command[2], function (data) {
+                    if (callback !== undefined && typeof(callback) === "function") {
+                        callback(data);
+                    }
                 });
             });
-        } else if (command[0] == 'help') {
-            callback && callback(helpText);
-        } else if (command[0] == 'syncresources') {
-            internet.syncResources(command[1], function(data) {
-                callback && callback(data);
+        } else if (command[0] === 'help') {
+            if (callback !== undefined && typeof(callback) === "function") {
+                callback(helpText);
+            }
+        } else if (command[0] === 'syncresources') {
+            internet.syncResources(command[1], function (data) {
+                if (callback !== undefined && typeof(callback) === "function") {
+                    callback(data);
+                }
             });
-        } else if (command[0] == 'exit') {
+        } else if (command[0] === 'exit') {
             win.close();
         } else {
-            result = command + ": not found";
-            callback && callback(result);
+            result = command[0] + ": not found";
+            if (callback !== undefined && typeof(callback) === "function") {
+                callback(result);
+            }
         }
     }
 }
@@ -77,7 +100,7 @@ var internet = {
     },
     connected: false,
     list: [],
-    checkConnection: function(callback) {
+    checkConnection: function (callback) {
         request({
                 url: internet.url + internet.endpoint.check,
                 headers: {
@@ -85,14 +108,16 @@ var internet = {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 }
             },
-            function(error, response, data) {
+            function (error, response, data) {
                 if (data.split("name='logout'").length > 1) {
                     internet.connected = true;
                 }
-                callback && callback();
+                if (callback !== undefined && typeof(callback) === "function") {
+                    callback();
+                }
             });
     },
-    login: function(username, password, callback) {
+    login: function (username, password, callback) {
         if (!internet.connected) {
             if (username === undefined && password === undefined) {
                 if (internet.list !== undefined && internet.list.length > 0) {
@@ -110,59 +135,77 @@ var internet = {
                                 'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36',
                                 'Content-Type': 'application/x-www-form-urlencoded'
                             },
-                            body: require('querystring').stringify(formdata)
+                            body: querystring.stringify(formdata)
                         },
-                        function(error, response, data) {
+                        function (error, response, data) {
                             if (!error) {
                                 if (data.split("name='logout'").length > 1) {
                                     internet.connected = true;
-                                    callback && callback('You is has internet.');
+                                    if (callback !== undefined && typeof(callback) === "function") {
+                                        callback('You is has internet.');
+                                    }
                                 } else {
                                     internet.login(username, password, callback);
                                 }
                             }
                         });
                 } else {
-                    callback && callback('No accounts saved.');
+                    if (callback !== undefined && typeof(callback) === "function") {
+                        callback('No accounts saved.');
+                    }
                 }
             } else if (password === undefined) {
-
+                if (callback !== undefined && typeof(callback) === "function") {
+                    callback('Account not saved.');
+                }
             } else {
-
+                if (callback !== undefined && typeof(callback) === "function") {
+                    callback('Login failed.');
+                }
             }
         } else {
-            callback && callback('Already connected to the internet.');
+            if (callback !== undefined && typeof(callback) === "function") {
+                callback('Already connected to the internet.');
+            }
         }
     },
-    loadResources: function() {
-        $.get('resources/list.json', function(data) {
+    loadResources: function () {
+        $.get('resources/list.json', function (data) {
             internet.list = JSON.parse(data);
         });
     },
-    syncResources: function(user, callback) {
+    syncResources: function (user, callback) {
         if (!internet.connected) {
-            callback && callback('Not connected to the internet.');
+            if (callback !== undefined && typeof(callback) === "function") {
+                callback('Not connected to the internet.');
+            }
         } else if (user !== undefined) {
-            request('https://iecsemanipal.com/hawklings/loginion/resources/?user=' + user, function(error, response, data) {
+            request('https://iecsemanipal.com/hawklings/loginion/resources/?user=' + user, function (error, response, data) {
                 if (!error) {
                     if (data.length > 0) {
-                        require('fs').writeFile("resources/list.json", data);
-                        callback && callback('Downloaded the list. Restart app.');
+                        fs.writeFile("resources/list.json", data);
+                        if (callback !== undefined && typeof(callback) === "function") {
+                            callback('Downloaded the list. Restart app.');
+                        }
                     } else {
-                        callback && callback('Failed to load the list.');
+                        if (callback !== undefined && typeof(callback) === "function") {
+                            callback('Failed to load the list.');
+                        }
                     }
                 }
             });
         } else {
-            callback && callback('Failed to sync resources.');
+            if (callback !== undefined && typeof(callback) === "function") {
+                callback('Failed to sync resources.');
+            }
         }
     }
 }
 
-$(document).ready(function() {
+$(document).ready(function () {
     setInterval(terminal.blink, 600);
     terminal.disable();
-    internet.checkConnection(function() {
+    internet.checkConnection(function () {
         if (internet.connected) {
             historyArea.addLine('Connected to the internet.');
         } else {
@@ -174,24 +217,19 @@ $(document).ready(function() {
     internet.loadResources();
 });
 
-$(document).on('keydown', function(e) {
-    var text = $('.command>input').val();
-    if (text[text.length - 1] == '_') {
-        $('.command>input').val(text.substr(0, text.length - 1));
-    }
+$(document).on('keydown', function (e) {
+    terminal.removeUnderscore();
     $('.command>input').focus();
 });
 
-$(document).on('keyup', function(e) {
-    var text = $('.command>input').val();
-    if (e.which == 13) {
-        if (text[text.length - 1] == '_') {
-            $('.command>input').val(text.substr(0, text.length - 1));
-        }
+$(document).on('keyup', function (e) {
+    if (e.which === 13) {
+        terminal.removeUnderscore();
         terminal.executeCommand($('.command>input').val());
-    } else if (text[text.length - 1] != '_') {
-        $('.command>input').val(text + '_');
+    } else {
+        terminal.addUnderscore();
     }
+
 });
 
 var helpText = "<br>Help: <br>" +
