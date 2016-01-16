@@ -7,6 +7,6 @@ install:
   - npm install
 
 script:
-  - npm test-mocha
-  - npm test-css
-  - npm test-js
+  - npm run test-mocha
+  - npm run test-css
+  - npm run test-js
