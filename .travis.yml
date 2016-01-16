@@ -5,11 +5,6 @@ node_js:
 
 install:
   - npm install
-  - npm install -g jshint csshint # these are extra (not dev requirements)
-  # JSHint Stylish to be saved locally so that we can supply it to jshint
-  - npm install --save-dev jshint-stylish
 
 script:
   - npm test
-  - jshint  --reporter=node_modules/jshint-stylish **.js
-  - csshint **.css 

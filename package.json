@@ -3,14 +3,17 @@
     "version": "0.0.1",
     "main": "index.html",
     "dependencies": {
+        "csshint": "^0.2.4",
         "font-awesome": "^4.5.0",
         "jquery": "^2.2.0",
+        "jshint": "^2.9.1",
+        "jshint-stylish": "^2.1.0",
         "mocha": "^2.3.4",
         "querystring": "^0.2.0",
         "request": "^2.67.0"
     },
     "scripts": {
-        "test": "mocha tests/tests.js"
+        "test": "mocha tests/tests.js; csshint **.css; jshint --reporter=node_modules/jshint-stylish **.js"
     },
     "repository": "https://github.com/hawklings/loginion",
     "LICENSE": "MIT"
