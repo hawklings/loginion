@@ -1,21 +1,26 @@
 # Binary Creation sub-folder
 
-This is used to create the various distributable binaries for cross-platform support.
+This is used to create the binaries for distribution.
 
-First install `nw-builder` globally by running
+
+## Installing
+
+install `nw-builder` globally by running
 
 ```
 npm install nw-builder -g
 ```
 
-To actually build all platform versions, use
+## Generating build files
+
+To build for all platform versions, run:
 
 ```
 npm build.js
 ```
 
-
-Built binaries are present in the `build` folder.
+This will create the binaries for all platforms (`linux32/64`, `osx32/64`, `windows`)
+Built binaries are present in the `build/` folder, which can then be uploaded.
 
 TODO
 ====
