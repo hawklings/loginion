@@ -1,6 +1,9 @@
 @font-face {
-    font-family: "EnvyCodeR";
-    src: url('fonts/Envy Code R.ttf');
+    font-family: 'EnvyCodeR';
+    src: url('fonts/Envy Code R.eot?#iefix') format('embedded-opentype'), 
+        url('fonts/Envy Code R.woff') format('woff'), 
+        url('fonts/Envy Code R.ttf')  format('truetype'),
+        url('fonts/Envy Code R.svg#svgFontName') format('svg');
 }
 
 body {
@@ -16,6 +19,11 @@ input {
     color: transparent;
     text-shadow: 0 0 0 #fff;
     font-size: 13px;
+}
+
+input:focus {
+    outline: none;
+    background-color: transparent;
 }
 
 .container {

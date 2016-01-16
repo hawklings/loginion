@@ -199,12 +199,8 @@ $(document).on('keyup', function(e) {
 });
 
 var callbackHandler = function(callback, message) {
-    if (callback !== undefined && typeof(callback) === "function") {
-        if (message !== undefined) {
-            callback(message);
-        } else {
-            callback();
-        }
+    if (callback !== undefined && typeof(callback) === "function") {    
+        callback(message);
     }
 };
 
