@@ -13,9 +13,9 @@
         "request": "^2.67.0"
     },
     "scripts": {
-        "test": "npm test-mocha; npm test-css; npm test-js",
+        "test": "npm run test-mocha; npm run test-css; npm run test-js",
         "test-mocha": "mocha tests/tests.js",
-        "test-css": "csshint **.css",
+        "test-css": "csshint  --ignore=\"bulletproof-font-face\" **.css",
         "test-js": " jshint --reporter=node_modules/jshint-stylish **.js"
     },
     "repository": "https://github.com/hawklings/loginion",
