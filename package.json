@@ -3,7 +3,6 @@
     "version": "0.0.1",
     "main": "index.html",
     "dependencies": {
-        "csshint": "^0.2.4",
         "font-awesome": "^4.5.0",
         "jquery": "^2.2.0",
         "jshint": "^2.9.1",
@@ -15,7 +14,7 @@
     "scripts": {
         "test": "npm run test-mocha; npm run test-css; npm run test-js",
         "test-mocha": "mocha tests/tests.js",
-        "test-css": "csshint  --ignore=\"bulletproof-font-face\" **.css",
+        "test-css": "csslint  --ignore=\"bulletproof-font-face\" **.css",
         "test-js": " jshint --reporter=node_modules/jshint-stylish **.js"
     },
     "repository": "https://github.com/hawklings/loginion",
