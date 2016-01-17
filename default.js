@@ -66,10 +66,8 @@ var terminal = {
         var result = '';
         var command = line.split(' ');
         if (command[0] === 'login') {
-            internet.checkConnection(function() {
-                internet.login(command[1], command[2], function(data) {
-                    callbackHandler(callback, data);
-                });
+            internet.login(command[1], command[2], function(data) {
+                callbackHandler(callback, data);
             });
         } else if (command[0] === 'help') {
             callbackHandler(callback, helpText);
