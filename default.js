@@ -145,6 +145,9 @@ var internet = {
             callback('Already connected to the internet.');
         }
     },
+    logout: function() {
+
+    },
     loadResources: function() {
         internet.makeRequest('resources/list.json', {}, function(data) {
             internet.list = JSON.parse(data);
