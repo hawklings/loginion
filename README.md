@@ -39,15 +39,57 @@ Contributing/Development
 Checklist (If you've done this sort of thing before)
 ----------------------------------------------------
 
-1. Install nwjs for your platform
-2. fork and clone our repo
-3. enter the folder with a `cd /path/to/repo/loginion`
-4. run `npm install` to install all dependencies
+1. Install `nwjs`([link](http://nwjs.io)) for your platform
+
+
+2. fork and clone our repository
+```
+git clone https://github.com/hawklings/loginion.git
+```
+
+
+3. `cd` into the folder
+```
+cd /path/to/repo/loginion
+```
+
+
+4. Install all dependencies with `npm`
+```
+npm install
+```
+
+
 5. create a branch with an appropriate name. eg. `feature-colored-buttons` or `fix-bug-stack-overflow`
-6. push to branch, and then create a pull request
-7. fix bugs highlighted by Travis until you get a bright green tick
-8. pester us until we merge it
-9. Thanks a lot!
+```
+git branch my-branch-name
+```
+
+
+6. push to the branch, and make sure your changes work
+```
+git add ...
+git commit ...
+git push ...
+```
+
+
+7. test with `npm test`, and fix all the JS and CSS linting errors.
+```
+npm test
+```
+
+
+8. create a [pull request](https://github.com/hawklings/loginion/pulls) against our repository
+
+
+9. fix bugs highlighted by Travis until you get a bright green tick
+
+
+10. pester us until we merge it
+
+
+11. Thanks a lot!
 
 Getting Started with Contribution
 ---------------------------------
