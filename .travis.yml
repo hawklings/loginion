@@ -10,3 +10,12 @@ script:
   - npm run test-mocha
   - npm run test-css
   - npm run test-js
+
+after_script:
+  - codeclimate-test-reporter < lcov.info
+
+addons:
+    code_climate:
+        repo_token: 21b900d6bc4dee90cac3d95ded6e1b92ad9d8f497cefbd5cf4ecf0e601abdc54
+
+
