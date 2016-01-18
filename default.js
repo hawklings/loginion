@@ -67,28 +67,42 @@ var terminal = {
     parseCommand: function(line, callback) {
         var result = '';
         var command = line.split(' ');
-        if (command[0] === 'login') {
-            internet.login(command[1], command[2], function(data) {
-                callback(data);
-            });
-        } else if (command[0] === 'help') {
-            callback(helpText);
-        } else if (command[0] === 'syncresources') {
-            internet.syncResources(command[1], function(data) {
-                callback(data);
-            });
-        } else if (command[0] === 'nukeresources') {
-            internet.nukeResources();
-            callback('Nuked');
-        } else if (command[0] === 'logout') {
-            internet.logout(function() {
-                callback("Logged out");
-            });
-        } else if (command[0] === 'exit') {
-            win.close();
+
+        var command_to_handler = {
+            login: function(command) {
+                internet.login(command[1], command[2], function(data) {
+                    callback(data);
+                });
+            },
+            help: function(_) {
+                callback(helpText);
+            },
+            syncresources: function(command) {
+                internet.syncResources(command[1], function(data) {
+                    callback(data);
+                });
+            },
+            nukeresources: function(_) {
+                internet.nukeResources();
+                callback('Nuked');
+            },
+            logout: function(command) {
+                internet.logout(function() {
+                    callback("Logged out");
+                });
+            },
+            exit: function(_) {
+                win.close();
+            }
+        };
+
+        command_name = command[0];
+        if (command_to_handler.hasOwnProperty(command_name)) {
+            command_to_handler[command_name](command);
         } else {
             result = command[0] + ": command not found";
             callback(result);
+
         }
     }
 };
@@ -124,7 +138,7 @@ var internet = {
                 username = data.split("document.forms[0].username.value=\"")[1].split("\"")[0];
                 internet.connected_account = {
                     username: username,
-                    password: 'UNKNOWN FOR NOW',
+                    password: 'UNKNOWN FOR NOW'
                 };
                 console.log("logged in user: ", internet.connected_account);
             }
