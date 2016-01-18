@@ -2,7 +2,6 @@ var gui = require('nw.gui');
 var win = gui.Window.get();
 
 var request = require('request');
-var fs = require('fs');
 var querystring = require('querystring');
 
 var historyArea = {
@@ -149,9 +148,10 @@ var internet = {
 
     },
     loadResources: function() {
-        internet.makeRequest('resources/list.json', {}, function(data) {
-            internet.list = JSON.parse(data);
-        });
+        if (localStorage.list !== undefined) {
+            internet.list = localStorage.list;
+            historyArea.addLine(internet.list.count);
+        }
     },
     syncResources: function(user, callback) {
         if (!internet.connected) {
@@ -159,8 +159,9 @@ var internet = {
         } else if (user !== undefined) {
             internet.makeRequest('https://iecsemanipal.com/hawklings/loginion/resources/?user=' + user, {}, function(data) {
                 if (data.length > 0) {
-                    fs.writeFile("resources/list.json", data);
-                    callback('Downloaded the list. Restart app.');
+                    localStorage.list = data;
+                    callback('Downloaded the list.');
+                    internet.loadResources();
                 } else {
                     callback('Failed to load the list.');
                 }
