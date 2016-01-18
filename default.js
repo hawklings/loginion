@@ -18,6 +18,9 @@ var historyArea = {
 };
 
 var terminal = {
+    intialize: function() {
+        $('.appVersion').html(gui.App.manifest.version);
+    },
     blink: function() {
         var text = $('.command>input').val();
         if (!terminal.removeUnderscore()) {
@@ -74,6 +77,9 @@ var terminal = {
             internet.syncResources(command[1], function(data) {
                 callback(data);
             });
+        } else if (command[0] === 'nukeresources') {
+            internet.nukeResources();
+            callback('Nuked');
         } else if (command[0] === 'exit') {
             win.close();
         } else {
@@ -113,35 +119,31 @@ var internet = {
         });
     },
     login: function(username, password, callback) {
-        if (!internet.connected) {
-            if (username === undefined && password === undefined) {
-                if (internet.list !== undefined && internet.list.length > 0) {
-                    var select = Math.floor(Math.random() * internet.list.length);
-                    var account = internet.list[select];
-                    var formdata = {
-                        username: account.username,
-                        password: account.password,
-                        mode: 191
-                    };
-                    historyArea.addLine('Trying ' + account.username);
-                    internet.makeRequest(internet.url + internet.endpoint.login, formdata, function(data) {
-                        if (data.split("name='logout'").length > 1) {
-                            internet.connected = true;
-                            callback('You is has internet.');
-                        } else {
-                            internet.login(username, password, callback);
-                        }
-                    });
-                } else {
-                    callback('No accounts saved.');
-                }
-            } else if (password === undefined) {
-                callback('Account not saved.');
+        if (username === undefined && password === undefined) {
+            if (internet.list !== undefined && internet.list.length > 0) {
+                var select = Math.floor(Math.random() * internet.list.length);
+                var account = internet.list[select];
+                var formdata = {
+                    username: account.username,
+                    password: account.password,
+                    mode: 191
+                };
+                historyArea.addLine('Trying ' + account.username);
+                internet.makeRequest(internet.url + internet.endpoint.login, formdata, function(data) {
+                    if (data.split("name='logout'").length > 1) {
+                        internet.connected = true;
+                        callback('You is has internet.');
+                    } else {
+                        internet.login(username, password, callback);
+                    }
+                });
             } else {
-                callback('Login failed.');
+                callback('No accounts saved.');
             }
+        } else if (password === undefined) {
+            callback('Account not saved.');
         } else {
-            callback('Already connected to the internet.');
+            callback('Login failed.');
         }
     },
     logout: function() {
@@ -149,8 +151,8 @@ var internet = {
     },
     loadResources: function() {
         if (localStorage.list !== undefined) {
-            internet.list = localStorage.list;
-            historyArea.addLine(internet.list.count);
+            internet.list = JSON.parse(localStorage.list);
+            console.log(internet.list.length);
         }
     },
     syncResources: function(user, callback) {
@@ -169,11 +171,15 @@ var internet = {
         } else {
             callback('Failed to sync resources.');
         }
+    },
+    nukeResources: function() {
+        localStorage.list = [];
     }
 };
 
 $(document).ready(function() {
     setInterval(terminal.blink, 600);
+    terminal.intialize();
     terminal.disable();
     internet.checkConnection(function() {
         if (internet.connected) {
@@ -205,4 +211,5 @@ var helpText = "<br>Help: <br>" +
     "<div style='border-top: 1px dotted #fff; width: 100%'></div><br>" +
     "help<br>Provides help information for Loginion commands<br><br>" +
     "login [username] [password]<br>Logs into random account unless username and password are provided<br><br>" +
-    "syncresources<br> Syncs resources";
+    "syncresources<br> Syncs resources<br><br>"+
+    "nukeresources<br> Nukes resources";
