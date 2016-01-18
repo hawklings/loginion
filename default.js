@@ -141,8 +141,7 @@ var internet = {
             };
             historyArea.addLine('Trying ' + username);
             internet.makeRequest(internet.url + internet.endpoint.login, formdata, callback);
-
-        };
+        }
 
         if (username === undefined && password === undefined) {
             if (internet.list !== undefined && internet.list.length > 0) {
@@ -184,7 +183,7 @@ var internet = {
         };
         internet.makeRequest(internet.url + internet.endpoint.logout, formdata, function(data) {
             callback(data);
-        })
+        });
     },
     loadResources: function() {
         if (localStorage.list !== undefined) {
