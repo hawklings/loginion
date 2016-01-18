@@ -100,8 +100,8 @@ send a Pull request our way, we'll be glad to accept.
 
 
 
-TODO
-====
+To Do
+=====
 
 * Build a GUI frontend
 * Setup a travis build system

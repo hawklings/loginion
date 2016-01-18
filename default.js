@@ -2,7 +2,6 @@ var gui = require('nw.gui');
 var win = gui.Window.get();
 
 var request = require('request');
-var fs = require('fs');
 var querystring = require('querystring');
 
 var historyArea = {
@@ -67,19 +66,19 @@ var terminal = {
         var command = line.split(' ');
         if (command[0] === 'login') {
             internet.login(command[1], command[2], function(data) {
-                callbackHandler(callback, data);
+                callback(data);
             });
         } else if (command[0] === 'help') {
-            callbackHandler(callback, helpText);
+            callback(helpText);
         } else if (command[0] === 'syncresources') {
             internet.syncResources(command[1], function(data) {
-                callbackHandler(callback, data);
+                callback(data);
             });
         } else if (command[0] === 'exit') {
             win.close();
         } else {
             result = command[0] + ": command not found";
-            callbackHandler(callback, result);
+            callback(result);
         }
     }
 };
@@ -102,7 +101,7 @@ var internet = {
                 body: querystring.stringify(formdata)
             },
             function(error, response, data) {
-                callbackHandler(callback, data);
+                callback(data);
             });
     },
     checkConnection: function(callback) {
@@ -110,7 +109,7 @@ var internet = {
             if (data.split("name='logout'").length > 1) {
                 internet.connected = true;
             }
-            callbackHandler(callback);
+            callback();
         });
     },
     login: function(username, password, callback) {
@@ -128,42 +127,47 @@ var internet = {
                     internet.makeRequest(internet.url + internet.endpoint.login, formdata, function(data) {
                         if (data.split("name='logout'").length > 1) {
                             internet.connected = true;
-                            callbackHandler(callback, 'You is has internet.');
+                            callback('You is has internet.');
                         } else {
                             internet.login(username, password, callback);
                         }
                     });
                 } else {
-                    callbackHandler(callback, 'No accounts saved.');
+                    callback('No accounts saved.');
                 }
             } else if (password === undefined) {
-                callbackHandler(callback, 'Account not saved.');
+                callback('Account not saved.');
             } else {
-                callbackHandler(callback, 'Login failed.');
+                callback('Login failed.');
             }
         } else {
-            callbackHandler(callback, 'Already connected to the internet.');
+            callback('Already connected to the internet.');
         }
     },
+    logout: function() {
+
+    },
     loadResources: function() {
-        internet.makeRequest('resources/list.json', {}, function(data) {
-            internet.list = JSON.parse(data);
-        });
+        if (localStorage.list !== undefined) {
+            internet.list = localStorage.list;
+            historyArea.addLine(internet.list.count);
+        }
     },
     syncResources: function(user, callback) {
         if (!internet.connected) {
-            callbackHandler(callback, 'Not connected to the internet.');
+            callback('Not connected to the internet.');
         } else if (user !== undefined) {
             internet.makeRequest('https://iecsemanipal.com/hawklings/loginion/resources/?user=' + user, {}, function(data) {
                 if (data.length > 0) {
-                    fs.writeFile("resources/list.json", data);
-                    callbackHandler(callback, 'Downloaded the list. Restart app.');
+                    localStorage.list = data;
+                    callback('Downloaded the list.');
+                    internet.loadResources();
                 } else {
-                    callbackHandler(callback, 'Failed to load the list.');
+                    callback('Failed to load the list.');
                 }
             });
         } else {
-            callbackHandler(callback, 'Failed to sync resources.');
+            callback('Failed to sync resources.');
         }
     }
 };
@@ -195,18 +199,7 @@ $(document).on('keyup', function(e) {
     } else {
         terminal.addUnderscore();
     }
-
 });
-
-var callbackHandler = function(callback, message) {
-    if (callback !== undefined && typeof(callback) === "function") {
-        if (message !== undefined) {
-            callback(message);
-        } else {
-            callback();
-        }
-    }
-};
 
 var helpText = "<br>Help: <br>" +
     "<div style='border-top: 1px dotted #fff; width: 100%'></div><br>" +
