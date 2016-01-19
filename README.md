@@ -36,37 +36,39 @@ whole in MIT.
 Contributing/Development
 ========================
 
-Checklist (If you've done this sort of thing before)
-----------------------------------------------------
+#### Install `nwjs`
 
-1. Install `nwjs`([link](http://nwjs.io)) for your platform
+Grab `nwjs` (which is the platform we run on), from the [official website](http://nwjs.io).
 
 
-2. fork and clone our repository
+#### fork and clone our repository
+To get started, fork the repository and clone from it
 ```
-git clone https://github.com/hawklings/loginion.git
+git clone https://github.com/<your-username>/loginion.git
 ```
 
 
-3. `cd` into the folder
+#### `cd` into the folder
 ```
 cd /path/to/repo/loginion
 ```
 
+#### Install all dependencies with `npm`
+This pulls in all the dependencies that are used, such as the
+testing frameworks and different libraries
 
-4. Install all dependencies with `npm`
 ```
 npm install
 ```
 
 
-5. create a branch with an appropriate name. eg. `feature-colored-buttons` or `fix-bug-stack-overflow`
+#### create a branch with an appropriate name. eg. `feature-colored-buttons` or `fix-bug-stack-overflow`
 ```
 git branch my-branch-name
 ```
 
 
-6. push to the branch, and make sure your changes work
+#### push to the branch, and make sure your changes work
 ```
 git add ...
 git commit ...
@@ -74,22 +76,22 @@ git push ...
 ```
 
 
-7. test with `npm test`, and fix all the JS and CSS linting errors.
+#### test with `npm test`, and fix all the JS and CSS linting errors.
 ```
 npm test
 ```
 
 
-8. create a [pull request](https://github.com/hawklings/loginion/pulls) against our repository
+#### create a [pull request](https://github.com/hawklings/loginion/pulls) against our repository
 
 
-9. fix bugs highlighted by Travis until you get a bright green tick
+#### fix bugs highlighted by Travis until you get a bright green tick
 
 
-10. pester us until we merge it
+### pester us until we merge it
 
 
-11. Thanks a lot!
+### Thanks a lot!
 
 Getting Started with Contribution
 ---------------------------------

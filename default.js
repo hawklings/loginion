@@ -67,24 +67,42 @@ var terminal = {
     parseCommand: function(line, callback) {
         var result = '';
         var command = line.split(' ');
-        if (command[0] === 'login') {
-            internet.login(command[1], command[2], function(data) {
-                callback(data);
-            });
-        } else if (command[0] === 'help') {
-            callback(helpText);
-        } else if (command[0] === 'syncresources') {
-            internet.syncResources(command[1], function(data) {
-                callback(data);
-            });
-        } else if (command[0] === 'nukeresources') {
-            internet.nukeResources();
-            callback('Nuked');
-        } else if (command[0] === 'exit') {
-            win.close();
+
+        var command_to_handler = {
+            login: function(command) {
+                internet.login(command[1], command[2], function(data) {
+                    callback(data);
+                });
+            },
+            help: function(_) {
+                callback(helpText);
+            },
+            syncresources: function(command) {
+                internet.syncResources(command[1], function(data) {
+                    callback(data);
+                });
+            },
+            nukeresources: function(_) {
+                internet.nukeResources();
+                callback('Nuked');
+            },
+            logout: function(command) {
+                internet.logout(function() {
+                    callback("Logged out");
+                });
+            },
+            exit: function(_) {
+                win.close();
+            }
+        };
+
+        command_name = command[0];
+        if (command_to_handler.hasOwnProperty(command_name)) {
+            command_to_handler[command_name](command);
         } else {
             result = command[0] + ": command not found";
             callback(result);
+
         }
     }
 };
@@ -93,9 +111,12 @@ var internet = {
     url: 'http://172.16.16.16',
     endpoint: {
         check: '/24online/webpages/client.jsp?fromlogout=true',
-        login: '/24online/servlet/E24onlineHTTPClient'
+        login: '/24online/servlet/E24onlineHTTPClient',
+        logout: '/24online/servlet/E24onlineHTTPClient',
+        liverequest: '/24online/webpages/liverequest.jsp?username=null&isfirsttime=1'
     },
     connected: false,
+    connected_account: undefined,
     list: [],
     makeRequest: function(url, formdata, callback) {
         request.post({
@@ -114,25 +135,38 @@ var internet = {
         internet.makeRequest(internet.url + internet.endpoint.check, {}, function(data) {
             if (data.split("name='logout'").length > 1) {
                 internet.connected = true;
+                username = data.split("document.forms[0].username.value=\"")[1].split("\"")[0];
+                internet.connected_account = {
+                    username: username,
+                    password: 'UNKNOWN FOR NOW'
+                };
+                console.log("logged in user: ", internet.connected_account);
             }
             callback();
         });
     },
     login: function(username, password, callback) {
+        //send the login request to ION
+        function send_login_request(username, password, callback) {
+            var formdata = {
+                username: username,
+                password: password,
+                mode: 191
+            };
+            historyArea.addLine('Trying ' + username);
+            internet.makeRequest(internet.url + internet.endpoint.login, formdata, callback);
+        }
+
         if (username === undefined && password === undefined) {
             if (internet.list !== undefined && internet.list.length > 0) {
                 var select = Math.floor(Math.random() * internet.list.length);
                 var account = internet.list[select];
-                var formdata = {
-                    username: account.username,
-                    password: account.password,
-                    mode: 191
-                };
-                historyArea.addLine('Trying ' + account.username);
-                internet.makeRequest(internet.url + internet.endpoint.login, formdata, function(data) {
+
+                send_login_request(account.username, account.password, function(data) {
                     if (data.split("name='logout'").length > 1) {
                         internet.connected = true;
-                        callback('You is has internet.');
+                        connected_account = account;
+                        callback('You has internet.');
                     } else {
                         internet.login(username, password, callback);
                     }
@@ -143,11 +177,27 @@ var internet = {
         } else if (password === undefined) {
             callback('Account not saved.');
         } else {
-            callback('Login failed.');
+            send_login_request(username, password, function(data) {
+                if (data.split("name='logout'").length > 1) {
+                    internet.connected = true;
+                    connected_account = account;
+                    callback('You has internet.');
+                } else {
+                    callback("Unable to connect with given credentials. EXTRACT REASON FROM DATA");
+                }
+            });
         }
     },
-    logout: function() {
-
+    logout: function(callback) {
+        var formdata = {
+            username: internet.connected_account.username,
+            password: '',
+            mode: '193',
+            checkClose: '1'
+        };
+        internet.makeRequest(internet.url + internet.endpoint.logout, formdata, function(data) {
+            callback(data);
+        });
     },
     loadResources: function() {
         if (localStorage.list !== undefined) {
@@ -211,5 +261,5 @@ var helpText = "<br>Help: <br>" +
     "<div style='border-top: 1px dotted #fff; width: 100%'></div><br>" +
     "help<br>Provides help information for Loginion commands<br><br>" +
     "login [username] [password]<br>Logs into random account unless username and password are provided<br><br>" +
-    "syncresources<br> Syncs resources<br><br>"+
+    "syncresources<br> Syncs resources<br><br>" +
     "nukeresources<br> Nukes resources";
