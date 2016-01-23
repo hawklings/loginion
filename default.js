@@ -71,24 +71,24 @@ var terminal = {
         var command_to_handler = {
             login: function(command) {
                 internet.login(command[1], command[2], function(data) {
-                    callback(data);
+                    return callback(data);
                 });
             },
             help: function(_) {
-                callback(helpText);
+                return callback(helpText);
             },
             syncresources: function(command) {
                 internet.syncResources(command[1], function(data) {
-                    callback(data);
+                    return callback(data);
                 });
             },
             nukeresources: function(_) {
                 internet.nukeResources();
-                callback('Nuked');
+                return callback('Nuked');
             },
             logout: function(command) {
                 internet.logout(function() {
-                    callback("Logged out");
+                    return callback("Logged out");
                 });
             },
             exit: function(_) {
@@ -101,7 +101,7 @@ var terminal = {
             command_to_handler[command_name](command);
         } else {
             result = command[0] + ": command not found";
-            callback(result);
+            return callback(result);
 
         }
     }
@@ -128,7 +128,7 @@ var internet = {
                 body: querystring.stringify(formdata)
             },
             function(error, response, data) {
-                callback(data);
+                return callback(data);
             });
     },
     checkConnection: function(callback) {
@@ -142,7 +142,7 @@ var internet = {
                 };
                 console.log("logged in user: ", internet.connected_account);
             }
-            callback();
+            return callback();
         });
     },
     login: function(username, password, callback) {
@@ -165,25 +165,25 @@ var internet = {
                 send_login_request(account.username, account.password, function(data) {
                     if (data.split("name='logout'").length > 1) {
                         internet.connected = true;
-                        connected_account = account;
-                        callback('You has internet.');
+                        internet.connected_account = account;
+                        return callback('You has internet.');
                     } else {
                         internet.login(username, password, callback);
                     }
                 });
             } else {
-                callback('No accounts saved.');
+                return callback('No accounts saved.');
             }
         } else if (password === undefined) {
-            callback('Account not saved.');
+            return callback('Account not saved.');
         } else {
             send_login_request(username, password, function(data) {
                 if (data.split("name='logout'").length > 1) {
                     internet.connected = true;
                     connected_account = account;
-                    callback('You has internet.');
+                    return callback('You has internet.');
                 } else {
-                    callback("Unable to connect with given credentials. EXTRACT REASON FROM DATA");
+                    return callback("Unable to connect with given credentials. EXTRACT REASON FROM DATA");
                 }
             });
         }
@@ -196,7 +196,7 @@ var internet = {
             checkClose: '1'
         };
         internet.makeRequest(internet.url + internet.endpoint.logout, formdata, function(data) {
-            callback(data);
+            return callback(data);
         });
     },
     loadResources: function() {
@@ -207,19 +207,19 @@ var internet = {
     },
     syncResources: function(user, callback) {
         if (!internet.connected) {
-            callback('Not connected to the internet.');
+            return callback('Not connected to the internet.');
         } else if (user !== undefined) {
             internet.makeRequest('https://iecsemanipal.com/hawklings/loginion/resources/?user=' + user, {}, function(data) {
                 if (data.length > 0) {
                     localStorage.list = data;
-                    callback('Downloaded the list.');
                     internet.loadResources();
+                    return callback('Downloaded the list.');
                 } else {
-                    callback('Failed to load the list.');
+                    return callback('Failed to load the list.');
                 }
             });
         } else {
-            callback('Failed to sync resources.');
+            return callback('Failed to sync resources.');
         }
     },
     nukeResources: function() {
