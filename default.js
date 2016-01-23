@@ -2,7 +2,6 @@ var gui = require('nw.gui');
 var win = gui.Window.get();
 
 var request = require('request');
-var fs = require('fs');
 var querystring = require('querystring');
 
 var historyArea = {
@@ -19,6 +18,9 @@ var historyArea = {
 };
 
 var terminal = {
+    intialize: function() {
+        $('.appVersion').html(gui.App.manifest.version);
+    },
     blink: function() {
         var text = $('.command>input').val();
         if (!terminal.removeUnderscore()) {
@@ -65,21 +67,42 @@ var terminal = {
     parseCommand: function(line, callback) {
         var result = '';
         var command = line.split(' ');
-        if (command[0] === 'login') {
-            internet.login(command[1], command[2], function(data) {
-                callbackHandler(callback, data);
-            });
-        } else if (command[0] === 'help') {
-            callbackHandler(callback, helpText);
-        } else if (command[0] === 'syncresources') {
-            internet.syncResources(command[1], function(data) {
-                callbackHandler(callback, data);
-            });
-        } else if (command[0] === 'exit') {
-            win.close();
+
+        var command_to_handler = {
+            login: function(command) {
+                internet.login(command[1], command[2], function(data) {
+                    return callback(data);
+                });
+            },
+            help: function(_) {
+                return callback(helpText);
+            },
+            syncresources: function(command) {
+                internet.syncResources(command[1], function(data) {
+                    return callback(data);
+                });
+            },
+            nukeresources: function(_) {
+                internet.nukeResources();
+                return callback('Nuked');
+            },
+            logout: function(command) {
+                internet.logout(function() {
+                    return callback("Logged out");
+                });
+            },
+            exit: function(_) {
+                win.close();
+            }
+        };
+
+        command_name = command[0];
+        if (command_to_handler.hasOwnProperty(command_name)) {
+            command_to_handler[command_name](command);
         } else {
             result = command[0] + ": command not found";
-            callbackHandler(callback, result);
+            return callback(result);
+
         }
     }
 };
@@ -88,9 +111,12 @@ var internet = {
     url: 'http://172.16.16.16',
     endpoint: {
         check: '/24online/webpages/client.jsp?fromlogout=true',
-        login: '/24online/servlet/E24onlineHTTPClient'
+        login: '/24online/servlet/E24onlineHTTPClient',
+        logout: '/24online/servlet/E24onlineHTTPClient',
+        liverequest: '/24online/webpages/liverequest.jsp?username=null&isfirsttime=1'
     },
     connected: false,
+    connected_account: undefined,
     list: [],
     makeRequest: function(url, formdata, callback) {
         request.post({
@@ -102,74 +128,108 @@ var internet = {
                 body: querystring.stringify(formdata)
             },
             function(error, response, data) {
-                callbackHandler(callback, data);
+                return callback(data);
             });
     },
     checkConnection: function(callback) {
         internet.makeRequest(internet.url + internet.endpoint.check, {}, function(data) {
             if (data.split("name='logout'").length > 1) {
                 internet.connected = true;
+                username = data.split("document.forms[0].username.value=\"")[1].split("\"")[0];
+                internet.connected_account = {
+                    username: username,
+                    password: 'UNKNOWN FOR NOW'
+                };
+                console.log("logged in user: ", internet.connected_account);
             }
-            callbackHandler(callback);
+            return callback();
         });
     },
     login: function(username, password, callback) {
-        if (!internet.connected) {
-            if (username === undefined && password === undefined) {
-                if (internet.list !== undefined && internet.list.length > 0) {
-                    var select = Math.floor(Math.random() * internet.list.length);
-                    var account = internet.list[select];
-                    var formdata = {
-                        username: account.username,
-                        password: account.password,
-                        mode: 191
-                    };
-                    historyArea.addLine('Trying ' + account.username);
-                    internet.makeRequest(internet.url + internet.endpoint.login, formdata, function(data) {
-                        if (data.split("name='logout'").length > 1) {
-                            internet.connected = true;
-                            callbackHandler(callback, 'You is has internet.');
-                        } else {
-                            internet.login(username, password, callback);
-                        }
-                    });
-                } else {
-                    callbackHandler(callback, 'No accounts saved.');
-                }
-            } else if (password === undefined) {
-                callbackHandler(callback, 'Account not saved.');
+        //send the login request to ION
+        function send_login_request(username, password, callback) {
+            var formdata = {
+                username: username,
+                password: password,
+                mode: 191
+            };
+            historyArea.addLine('Trying ' + username);
+            internet.makeRequest(internet.url + internet.endpoint.login, formdata, callback);
+        }
+
+        if (username === undefined && password === undefined) {
+            if (internet.list !== undefined && internet.list.length > 0) {
+                var select = Math.floor(Math.random() * internet.list.length);
+                var account = internet.list[select];
+
+                send_login_request(account.username, account.password, function(data) {
+                    if (data.split("name='logout'").length > 1) {
+                        internet.connected = true;
+                        internet.connected_account = account;
+                        return callback('You has internet.');
+                    } else {
+                        internet.login(username, password, callback);
+                    }
+                });
             } else {
-                callbackHandler(callback, 'Login failed.');
+                return callback('No accounts saved.');
             }
+        } else if (password === undefined) {
+            return callback('Account not saved.');
         } else {
-            callbackHandler(callback, 'Already connected to the internet.');
+            send_login_request(username, password, function(data) {
+                if (data.split("name='logout'").length > 1) {
+                    internet.connected = true;
+                    connected_account = account;
+                    return callback('You has internet.');
+                } else {
+                    return callback("Unable to connect with given credentials. EXTRACT REASON FROM DATA");
+                }
+            });
         }
     },
-    loadResources: function() {
-        internet.makeRequest('resources/list.json', {}, function(data) {
-            internet.list = JSON.parse(data);
+    logout: function(callback) {
+        var formdata = {
+            username: internet.connected_account.username,
+            password: '',
+            mode: '193',
+            checkClose: '1'
+        };
+        internet.makeRequest(internet.url + internet.endpoint.logout, formdata, function(data) {
+            return callback(data);
         });
+    },
+    loadResources: function() {
+        if (localStorage.list !== undefined) {
+            internet.list = JSON.parse(localStorage.list);
+            console.log(internet.list.length);
+        }
     },
     syncResources: function(user, callback) {
         if (!internet.connected) {
-            callbackHandler(callback, 'Not connected to the internet.');
+            return callback('Not connected to the internet.');
         } else if (user !== undefined) {
             internet.makeRequest('https://iecsemanipal.com/hawklings/loginion/resources/?user=' + user, {}, function(data) {
                 if (data.length > 0) {
-                    fs.writeFile("resources/list.json", data);
-                    callbackHandler(callback, 'Downloaded the list. Restart app.');
+                    localStorage.list = data;
+                    internet.loadResources();
+                    return callback('Downloaded the list.');
                 } else {
-                    callbackHandler(callback, 'Failed to load the list.');
+                    return callback('Failed to load the list.');
                 }
             });
         } else {
-            callbackHandler(callback, 'Failed to sync resources.');
+            return callback('Failed to sync resources.');
         }
+    },
+    nukeResources: function() {
+        localStorage.list = [];
     }
 };
 
 $(document).ready(function() {
     setInterval(terminal.blink, 600);
+    terminal.intialize();
     terminal.disable();
     internet.checkConnection(function() {
         if (internet.connected) {
@@ -195,21 +255,11 @@ $(document).on('keyup', function(e) {
     } else {
         terminal.addUnderscore();
     }
-
 });
-
-var callbackHandler = function(callback, message) {
-    if (callback !== undefined && typeof(callback) === "function") {
-        if (message !== undefined) {
-            callback(message);
-        } else {
-            callback();
-        }
-    }
-};
 
 var helpText = "<br>Help: <br>" +
     "<div style='border-top: 1px dotted #fff; width: 100%'></div><br>" +
     "help<br>Provides help information for Loginion commands<br><br>" +
     "login [username] [password]<br>Logs into random account unless username and password are provided<br><br>" +
-    "syncresources<br> Syncs resources";
+    "syncresources<br> Syncs resources<br><br>" +
+    "nukeresources<br> Nukes resources";

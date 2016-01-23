@@ -1,7 +1,18 @@
 var NwBuilder = require('nw-builder');
+
+var filesToInclude = [
+	'../fonts/*',
+	'../node_modules/font-awesome/**',
+	'../node_modules/jquery/**',
+	'../node_modules/querystring/**',
+	'../node_modules/request/**',
+	'../*'
+];
+
 var nw = new NwBuilder({
-    files: '../**/**', // use the glob format
-    platforms: ['osx32', 'osx64', 'win32', 'win64', 'linux32', 'linux64'],
+    files: filesToInclude, // use the glob format
+    //platforms: ['osx32', 'osx64', 'win32', 'win64', 'linux32', 'linux64'],
+    platforms: ['win64', 'osx64'],
     version: '0.12.3'
 });
 
