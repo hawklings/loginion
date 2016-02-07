@@ -14,6 +14,13 @@ var historyArea = {
     addResult: function(result) {
         $('.history').append('<div>' + result + '</div>');
         $('.history').append('<br> ');
+
+        var scrollToBottom = function() {
+            window.scrollTo(0, document.body.scrollHeight);
+        };
+
+        scrollToBottom();
+
     }
 };
 
