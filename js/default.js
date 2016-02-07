@@ -3,6 +3,7 @@ var win = gui.Window.get();
 
 var request = require('request');
 var querystring = require('querystring');
+var cron = require('cron');
 
 var historyArea = {
     addLine: function(line) {
@@ -81,6 +82,22 @@ var terminal = {
                     return callback(data);
                 });
             },
+            monitor: function(command) {
+                var every = "10";
+                if (command[1] !== undefined) {
+                    every = command[1];
+                }
+                var job = new cron.CronJob('*/' + every + ' * * * * *', function() {
+                    internet.checkConnection(function() {
+                        if (!internet.connected) {
+                            historyArea.addLine('Internet lost, retrying');
+                            internet.login(undefined, undefined);
+                        }
+                    });
+                });
+                job.start();
+                return callback('Keeping an i on things');
+            },
             help: function(_) {
                 return callback(helpText);
             },
@@ -147,7 +164,7 @@ var internet = {
                     username: username,
                     password: 'UNKNOWN FOR NOW'
                 };
-                console.log("logged in user: ", internet.connected_account);
+                //console.log("logged in user: ", internet.connected_account);
             }
             return callback();
         });
@@ -209,7 +226,6 @@ var internet = {
     loadResources: function() {
         if (localStorage.list !== undefined) {
             internet.list = JSON.parse(localStorage.list);
-            console.log(internet.list.length);
         }
     },
     syncResources: function(user, callback) {
@@ -268,5 +284,6 @@ var helpText = "<br>Help: <br>" +
     "<div style='border-top: 1px dotted #fff; width: 100%'></div><br>" +
     "help<br>Provides help information for Loginion commands<br><br>" +
     "login [username] [password]<br>Logs into random account unless username and password are provided<br><br>" +
+    "monitor [frequency]<br>Checks internet connection every 'frequency' seconds<br><br>" +
     "syncresources<br> Syncs resources<br><br>" +
     "nukeresources<br> Nukes resources";

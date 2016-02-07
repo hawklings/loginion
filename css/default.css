@@ -1,9 +1,9 @@
 @font-face {
     font-family: 'EnvyCodeR';
-    src: url('fonts/Envy Code R.eot?#iefix') format('embedded-opentype'), 
-        url('fonts/Envy Code R.woff') format('woff'), 
-        url('fonts/Envy Code R.ttf')  format('truetype'),
-        url('fonts/Envy Code R.svg#svgFontName') format('svg');
+    src: url('../fonts/Envy Code R.eot?#iefix') format('embedded-opentype'), 
+        url('../fonts/Envy Code R.woff') format('woff'), 
+        url('../fonts/Envy Code R.ttf')  format('truetype'),
+        url('../fonts/Envy Code R.svg#svgFontName') format('svg');
 }
 
 body {
