@@ -3,10 +3,17 @@ var win = gui.Window.get();
 
 var request = require('request');
 var querystring = require('querystring');
+var cron = require('cron');
 
 var historyArea = {
     addLine: function(line) {
         $('.history').append('<div>' + line + '</div>');
+
+        var scrollToBottom = function() {
+            window.scrollTo(0, document.body.scrollHeight);
+        };
+
+        scrollToBottom();
     },
     executedCommand: function(command) {
         $('.history').append('<div class="sameline"><div class="fa fa-angle-right"></div><div class="command">' + command + '</div></div>');
@@ -81,6 +88,16 @@ var terminal = {
                     return callback(data);
                 });
             },
+            monitor: function(command) {
+                var every = "10";
+                if (command[1] !== undefined) {
+                    every = command[1];
+                }
+                internet.monitorConnection(every, function(data) {
+                    return callback(data);
+                });
+                return callback('Keeping an i on things');
+            },
             help: function(_) {
                 return callback(helpText);
             },
@@ -94,9 +111,14 @@ var terminal = {
                 return callback('Nuked');
             },
             logout: function(command) {
-                internet.logout(function() {
-                    return callback("Logged out");
-                });
+                if (internet.connected === true) {
+                    internet.logout(function() {
+                        internet.connected = false;
+                        return callback("Logged out");
+                    });
+                } else {
+                    return callback("Not logged in");
+                }
             },
             exit: function(_) {
                 win.close();
@@ -147,10 +169,26 @@ var internet = {
                     username: username,
                     password: 'UNKNOWN FOR NOW'
                 };
-                console.log("logged in user: ", internet.connected_account);
+                //console.log("logged in user: ", internet.connected_account);
             }
             return callback();
         });
+    },
+    monitorConnection: function(every, callback) {
+        var job = new cron.CronJob('*/' + every + ' * * * * *', function() {
+            internet.checkConnection(function() {
+                if (!internet.connected) {
+                    historyArea.addLine('Internet lost, retrying');
+                    internet.login(undefined, undefined, function(data) {
+                        if (data === 'You has internet.') {
+                            internet.monitorlogin = false;
+                            return callback(data);
+                        }
+                    });
+                }
+            });
+        });
+        job.start();
     },
     login: function(username, password, callback) {
         //send the login request to ION
@@ -209,7 +247,6 @@ var internet = {
     loadResources: function() {
         if (localStorage.list !== undefined) {
             internet.list = JSON.parse(localStorage.list);
-            console.log(internet.list.length);
         }
     },
     syncResources: function(user, callback) {
@@ -268,5 +305,6 @@ var helpText = "<br>Help: <br>" +
     "<div style='border-top: 1px dotted #fff; width: 100%'></div><br>" +
     "help<br>Provides help information for Loginion commands<br><br>" +
     "login [username] [password]<br>Logs into random account unless username and password are provided<br><br>" +
+    "monitor [frequency]<br>Checks internet connection every 'frequency' seconds<br><br>" +
     "syncresources<br> Syncs resources<br><br>" +
     "nukeresources<br> Nukes resources";

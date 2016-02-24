@@ -6,13 +6,15 @@ var filesToInclude = [
 	'../node_modules/jquery/**',
 	'../node_modules/querystring/**',
 	'../node_modules/request/**',
+	'../js/*',
+	'../css/*',
 	'../*'
 ];
 
 var nw = new NwBuilder({
     files: filesToInclude, // use the glob format
     //platforms: ['osx32', 'osx64', 'win32', 'win64', 'linux32', 'linux64'],
-    platforms: ['win64', 'osx64'],
+    platforms: ['win64'],
     version: '0.12.3'
 });
 
