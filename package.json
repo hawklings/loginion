@@ -16,8 +16,8 @@
   "scripts": {
     "test": "npm run test-mocha; npm run test-css; npm run test-js",
     "test-mocha": "mocha tests/tests.js",
-    "test-css": "csslint **.css",
-    "test-js": " jshint --reporter=node_modules/jshint-stylish **.js"
+    "test-css": "csslint css/**.css",
+    "test-js": " jshint --reporter=node_modules/jshint-stylish js/**.js"
   },
   "repository": "https://github.com/hawklings/loginion",
   "LICENSE": "MIT",
