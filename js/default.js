@@ -8,6 +8,12 @@ var cron = require('cron');
 var historyArea = {
     addLine: function(line) {
         $('.history').append('<div>' + line + '</div>');
+
+        var scrollToBottom = function() {
+            window.scrollTo(0, document.body.scrollHeight);
+        };
+
+        scrollToBottom();
     },
     executedCommand: function(command) {
         $('.history').append('<div class="sameline"><div class="fa fa-angle-right"></div><div class="command">' + command + '</div></div>');
@@ -87,15 +93,9 @@ var terminal = {
                 if (command[1] !== undefined) {
                     every = command[1];
                 }
-                var job = new cron.CronJob('*/' + every + ' * * * * *', function() {
-                    internet.checkConnection(function() {
-                        if (!internet.connected) {
-                            historyArea.addLine('Internet lost, retrying');
-                            internet.login(undefined, undefined);
-                        }
-                    });
+                internet.monitorConnection(every, function(data) {
+                    return callback(data);
                 });
-                job.start();
                 return callback('Keeping an i on things');
             },
             help: function(_) {
@@ -111,9 +111,14 @@ var terminal = {
                 return callback('Nuked');
             },
             logout: function(command) {
-                internet.logout(function() {
-                    return callback("Logged out");
-                });
+                if (internet.connected === true) {
+                    internet.logout(function() {
+                        internet.connected = false;
+                        return callback("Logged out");
+                    });
+                } else {
+                    return callback("Not logged in");
+                }
             },
             exit: function(_) {
                 win.close();
@@ -168,6 +173,22 @@ var internet = {
             }
             return callback();
         });
+    },
+    monitorConnection: function(every, callback) {
+        var job = new cron.CronJob('*/' + every + ' * * * * *', function() {
+            internet.checkConnection(function() {
+                if (!internet.connected) {
+                    historyArea.addLine('Internet lost, retrying');
+                    internet.login(undefined, undefined, function(data) {
+                        if (data === 'You has internet.') {
+                            internet.monitorlogin = false;
+                            return callback(data);
+                        }
+                    });
+                }
+            });
+        });
+        job.start();
     },
     login: function(username, password, callback) {
         //send the login request to ION
