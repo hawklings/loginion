@@ -4,7 +4,7 @@
         <link rel="icon" href="favicon.png">
         <meta name=viewport content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="node_modules/font-awesome/css/font-awesome.min.css">
-        <link href="default.css" rel="stylesheet">
+        <link href="css/default.css" rel="stylesheet">
     </head>
 
     <body>
@@ -23,6 +23,15 @@
             </div>
         </div>
         <script src="node_modules/jquery/dist/jquery.min.js"></script>
-        <script src="default.js"></script>
+        <script src="js/default.js"></script>
+        <script>
+            var path = './';
+            var fs = require('fs');
+
+            fs.watch(path, function() {
+                if (location)
+                    location.reload();
+            });
+        </script>
     </body>
 </html>
