@@ -149,19 +149,25 @@ var internet = {
     list: [],
     makeRequest: function(url, formdata, callback) {
         request.post({
-                url: url,
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36',
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: querystring.stringify(formdata)
+            url: url,
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36',
+                'Content-Type': 'application/x-www-form-urlencoded'
             },
-            function(error, response, data) {
-                return callback(data);
-            });
+            body: querystring.stringify(formdata),
+            timeout: 4000
+        },
+        function(error, response, data) {
+            return callback(data);
+        });
     },
     checkConnection: function(callback) {
         internet.makeRequest(internet.url + internet.endpoint.check, {}, function(data) {
+            if (data == undefined || data == null) {
+                internet.connected = false;
+                return callback()
+            };
+
             if (data.split("name='logout'").length > 1) {
                 internet.connected = true;
                 username = data.split("document.forms[0].username.value=\"")[1].split("\"")[0];
@@ -302,9 +308,9 @@ $(document).on('keyup', function(e) {
 });
 
 var helpText = "<br>Help: <br>" +
-    "<div style='border-top: 1px dotted #fff; width: 100%'></div><br>" +
-    "help<br>Provides help information for Loginion commands<br><br>" +
-    "login [username] [password]<br>Logs into random account unless username and password are provided<br><br>" +
-    "monitor [frequency]<br>Checks internet connection every 'frequency' seconds<br><br>" +
-    "syncresources<br> Syncs resources<br><br>" +
-    "nukeresources<br> Nukes resources";
+"<div style='border-top: 1px dotted #fff; width: 100%'></div><br>" +
+"help<br>Provides help information for Loginion commands<br><br>" +
+"login [username] [password]<br>Logs into random account unless username and password are provided<br><br>" +
+"monitor [frequency]<br>Checks internet connection every 'frequency' seconds<br><br>" +
+"syncresources<br> Syncs resources<br><br>" +
+"nukeresources<br> Nukes resources";
