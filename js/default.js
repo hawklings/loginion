@@ -163,10 +163,10 @@ var internet = {
     },
     checkConnection: function(callback) {
         internet.makeRequest(internet.url + internet.endpoint.check, {}, function(data) {
-            if (data == undefined || data == null) {
+            if (data === undefined || data === null) {
                 internet.connected = false;
-                return callback()
-            };
+                return callback();
+            }
 
             if (data.split("name='logout'").length > 1) {
                 internet.connected = true;
