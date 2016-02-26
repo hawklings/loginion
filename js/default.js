@@ -291,6 +291,18 @@ $(document).ready(function() {
         terminal.enable();
     });
     internet.loadResources();
+
+    //workaround for mac OS for quit to work
+    var quitKeys = {
+        key: "Ctrl+Q"
+    };
+
+    var shortcutQuit = new gui.Shortcut(quitKeys);
+    gui.App.registerGlobalHotKey(shortcutQuit);
+    shortcutQuit.on('active', function() {
+        // quit your app
+        win.close();
+    });
 });
 
 $(document).on('keydown', function(e) {
