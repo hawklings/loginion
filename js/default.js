@@ -218,7 +218,7 @@ var internet = {
                     if (data.split("name='logout'").length > 1) {
                         internet.connected = true;
                         internet.connected_account = account;
-                        return callback('You has internet.');
+                        return callback('You has internet. username: ' + account.username + " | password: " + account.password);
                     } else {
                         //set that we don't have an account that we were
                         //connected with.
