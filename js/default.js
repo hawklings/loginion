@@ -204,15 +204,25 @@ var internet = {
 
         if (username === undefined && password === undefined) {
             if (internet.list !== undefined && internet.list.length > 0) {
-                var select = Math.floor(Math.random() * internet.list.length);
-                var account = internet.list[select];
+                //if we had an account that we were using and logged in
+                //successfully, just use that
+                var account = null;
+                if (internet.connected_account === undefined) {
+                    var select = Math.floor(Math.random() * internet.list.length);
+                    account = internet.list[select];
+                } else {
+                    account = internet.connected_account;
+                }
 
                 send_login_request(account.username, account.password, function(data) {
                     if (data.split("name='logout'").length > 1) {
                         internet.connected = true;
                         internet.connected_account = account;
-                        return callback('You has internet.');
+                        return callback('You has internet. username: ' + account.username + " | password: " + account.password);
                     } else {
+                        //set that we don't have an account that we were
+                        //connected with.
+                        internet.connected_account = undefined;
                         internet.login(username, password, callback);
                     }
                 });
