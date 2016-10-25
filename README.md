@@ -6,8 +6,8 @@ A replacement for the ION Login page on the campus of MIT, Manipal.
 **If there are issues, please [report them in the issues page](https://github.com/hawklings/loginion/issues)**
 
 
-Installing
-==========
+Installing Instructions
+=======================
 
 Head over to the [Downloads](#) section and download the package for your platform (Window, Mac OS, or Linux)
 
