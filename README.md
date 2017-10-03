@@ -5,6 +5,7 @@ A replacement for the ION Login page on the campus of MIT, Manipal.
 
 **If there are issues, please [report them in the issues page](https://github.com/hawklings/loginion/issues)**
 
+--Deprecated--
 
 Installing
 ==========
